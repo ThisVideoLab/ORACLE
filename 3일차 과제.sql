@@ -50,7 +50,7 @@ select ename 성명, dno 부서번호, salary "인상 전 월급", decode(JOB, 'ANALYST', 2
                                                                'SALESMAN', 180,
                                                                'MANAGER', 150,
                                                                'CLERK', 100,
-                                                               salary) as "인상액",
+                                                               0) as "인상액",
 
                                                   decode(JOB, 'ANALYST', salary + 200,
                                                                'SALESMAN', salary + 180,
@@ -58,7 +58,6 @@ select ename 성명, dno 부서번호, salary "인상 전 월급", decode(JOB, 'ANALYST', 2
                                                                'CLERK', salary + 100,
                                                                salary) as "인상후월급" 
 from employee;
-
 --8. 사원번호, 사원번호 2자리만 출력하고 나머지는 가름 as 가린 번호 ,
 select eno 사원번호, rpad(substr(eno,2,2),4,'*') 가린번호, ename 성명, rpad(substr(ename,2,2),4,'*') 가린성명 from employee;
 
@@ -66,9 +65,10 @@ select eno 사원번호, rpad(substr(eno,2,2),4,'*') 가린번호, ename 성명, rpad(subs
 select rpad(substr('880509-1000000',0,8),14,'*') "가린 주민번호", rpad(substr('010-8998-7325',0,6),13,'*') "가린 전화번호" from dual;
 
 --10.사원번호, 직속상관 사원번호(없으면 0000)직속상관
-select eno 사원번호, nvl2(manager,manager,'0000') 직속상관,decode(substr(manager,0,2), 75 , 5555,
-                                                               76, 6666,
-                                                               77, 77777,
-                                                               78, 8888,
-                                                               substr(manager,0,2))  "변환번호"
+select eno 사원번호,ename 사원명, to_char(nvl2(manager,manager,0000), '0,000') as 직속상관,decode(substr(manager,0,2), 75 , '5555',
+                                                                                                        76, 6666,
+                                                                                                        77, 7777,
+                                                                                                        78, 8888,
+                                                                                                        null, rpad(nvl2( manager, manager, '0000'),4,'0000'),
+                                                                                                        manager)  변환번호
 from employee;

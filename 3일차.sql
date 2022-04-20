@@ -236,7 +236,8 @@ select ename 성명, dno 부서번호,salary "인상 전 월급", decode(dno, 10, 300,
 from employee;             
 
 
--- case: if ~ else if, else if ~~
+-- case: 
+~ else if, else if ~~
 /*
 
 case 표현식 when 조건1 then 결과1
