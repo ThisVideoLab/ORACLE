@@ -213,6 +213,8 @@ DECODE (표현식, 조건1, 결과1,
                기본결과n
         )
 
+
+
 */
 
 select ename 성명, dno 부서번호, decode(dno, 10, 'Accounting',
