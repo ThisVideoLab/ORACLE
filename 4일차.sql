@@ -1,5 +1,25 @@
 -- 4일차
 
+-- 
+
+/* 제약조건: 테이블의 컬럼에 할당되어서 데이터의 무결성을 확보함. 즉 오류 없는 데이터를 위해
+            컬럼에서 필요로하는 데이터만을 받아들이는 역할을 함.
+            
+-- Primary Key: 테이블에 한번만 사용할 수 있음. 하나의 컬럼 혹은 두개 이상을 그루핑해서 적용됨.
+                중복된 값을 넣을 수 없고, null도 넣을 수 없음.
+-- unuque: 테이블의 여러 컬럼에 할당할 수 있음. 다만 중복된 값은 넣을 수 없다. null 값을 넣을 순 있지만,
+            중복된 값을 넣을순 없기 때문에 딱 1개만 넣을 수 있다.
+-- forign Key : 다른 테이블의 특정 컬럼의 값을 참조해서만 넣을 수 있다. 이것은 일종의 인용이며
+                자신의 컬럼에 직접 값을 할당하지 못한한다
+-- not null: null 값 방지
+-- check: 컬럼에 값을 할당할 때 체크해서 (조건에 만족하는) 값을 할당함
+-- default: 값을 넣지 않을때 기본값이 할당됨.
+*/
+
+
+
+
+
 /* 
 그룹함수 : 동일한 값에 대해 그룹핑해서 처리하는 함수
 grout by 절에서 특정 컬럼을 정의할 경우, 해당 ㅋ러럼의 동일한 값들을 그룹핑해서 연산을 적용함
@@ -83,14 +103,14 @@ group by dno;
 select job 직책, count(job) 인원, trunc(avg(salary)) 평균월급, sum(salary) "직책별 월급 총액", 
 max(salary) 최고월급, min(salary) 최저월급
 from employee
-group by job;
+group by job; 
 
 -- 다중 그루핑
 
 select dno 부서명, job 직무, count(*) 인원, trunc(avg(salary)) 평균월급
 from employee
-group by dno, job -- 두 컬럼이 일치하는 항목들을 그루핑함
-order by dno;
+group by dno, job -- 두 컬럼이 일치하는 항목들을 그루핑하면, 두 컬럼이 다 일치할 때만 처리가 됨
+order by dno asc;
 
 select dno, job
 from employee
@@ -275,6 +295,74 @@ where salary between losal and hisal;
 -- 테이블 3개 조인시키기
 
 select ename, dname, salary, grade -- 여러 테이블의 컬럼들을 출력함
-from employee e, department d, salgrade s
+from employee e, department d, salgrade s;
+
+
+-- using의 사용 
+    -- natural join :  공통 키 컬럼을 Oracle 내부에서 자동처리하는 경우
+    -- 반드시 두 테이블의 공통 키 컬럼의 데이터 타입이 같아야하는 조건이 있는데,
+    -- 다른 경우에 using으로 처리 가능함. 또한 여러개인 경우에도 using을 사용함.
 
 -- SELECT * FROM department;
+
+-- self join : 자기 자신의 테이블을 조인한다. (주로 사원의 상사 정보를 출력할 때 사용함)
+-- 별칭(앨리어스)를 반드시 사용해야 함.
+
+select eno, ename, manager
+from employee
+where manager = '7788';
+
+-- self join을 사용해 직속상관 사원번호를 출력하기
+
+-- equi join으로 self join을 처리
+select e1.eno 사번, e1.ename 성명, nvl(e1.manager,'0') 직속상관, e2.ename 직속상관이름, e2.eno 직속상관사번
+from employee e1, employee e2
+where e1.manager = e2.eno
+order by e1.ename asc;
+
+--ansi 호환: inner join으로 처리함.
+
+select e1.eno 사번, e1.ename 성명, nvl(e1.manager,'0') 직속상관, e2.ename 직속상관이름, e2.eno 직속상관사번
+from employee e1 inner join employee e2
+on e1.manager = e2.eno
+order by e1.ename asc;
+
+-- equi join 에 self join을 결합하여 처리
+
+select e1.ename || '의 직속상관은' || e1.manager || '입니다' 
+from employee e1, employee e2
+where e1.manager = e2.eno
+order by e1.ename asc;
+
+select e1.ename 성명, e2.ename 직속상관명
+from employee e1 join employee e2
+on e1.manager = e2.eno (+)
+order by e1.ename asc;
+: inner join으로 처리함.
+
+select e1.ename || '의 직속상관은' || e1.manager || '입니다' 
+from employee e1 inner join employee e2
+on e1.manager = e2.eno
+order by e1.ename asc;
+
+--OUTER JOIN:
+    -- 특정 컬럼의 두 테이블에서 공통적이지 않는 내용을 출력해야 할 때,
+    -- 공통되지 않는 컬럼은 NULL을 출력함
+    -- 기호를 사용해서 출력하는건 Oracle에서만 사용이 가능함.
+    -- ANSI 호환: OUTER JOIN 구문을 사용해서 출력함. 모든 DMMS에서 호환됨.
+
+select e1.ename 성명, e2.ename 직속상관명
+from employee e1 join employee e2
+on e1.manager = e2.eno (+) -- 조건 밖에서 불러들이기
+order by e1.ename asc;
+
+--ansi 호환을 사용해서 출력
+    --Left outer join: 동적인 부분이 없더라도 왼쪽은 무조건 모두 출력
+    --Right outer join: 동적인 부분이 없더라도 오른쪽은 무조건 모두 출력
+    --FULL outer join: 동적인 부분이 없더라도 양쪽 무조건 모두 출력
+    
+select e1.ename, e2.ename 
+from employee e1 Left outer join employee e2
+on e1.manager = e2.eno
+order by e1.ename asc;
+
