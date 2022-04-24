@@ -338,7 +338,9 @@ select e1.ename 성명, e2.ename 직속상관명
 from employee e1 join employee e2
 on e1.manager = e2.eno (+)
 order by e1.ename asc;
-: inner join으로 처리함.
+
+
+--inner join으로 처리함.
 
 select e1.ename || '의 직속상관은' || e1.manager || '입니다' 
 from employee e1 inner join employee e2
