@@ -11,6 +11,14 @@ from employee e1, employee e2
 where e1.manager = e2.eno
 order by e1.ename asc;
 
+--7-1 version : ANSI JOIN으로 풀어보기 ( 문제 풀이중에 추가됨)
+--              모든 DBMS에서 모두 사용함. 기존 Join과 다르게 where 대신 on을 사용함
+
+select e1.ename 이름, e1.eno 사원번호, nvl(e1.manager,'0') 관리자번호, e2.ename 관리자이름
+from employee e1 Inner join employee e2
+on e1.manager = e2.eno
+order by e1.ename asc;
+
 -- 8. OUTER JOIN, SELF JOIN을 사용하여 관리자가 없는 사원을 포함하여 사원번호를 기준으로 내림차순 정렬하여 출력 하시오. 
 
 select e1.eno 사원번호, e1.ename 사원명, e2.ename 직속상관명
@@ -67,12 +75,20 @@ order by salary asc;
 
 4. 평균 월급이 가장 낮은 직급의 가장 박봉인 직원의 직급과 급여를 표시하시오
 
+(내답)
 select ename 성명, job 직급, salary 급여
 from employee
 where salary = (select min(salary) from employee 
                                    group by job 
                                    having avg(salary) = (select min(avg(salary)) 
                                                         from employee group by job))
+(선생님답)
+select min(salary) 급여, job 직급
+from employee
+group by job
+having avg(salary) <= all (Select avg(salary)
+                           from employee
+                           group by job);
 
 
 5. 각 부서의 최소 급여를 받는 사원의 이름, 급여, 부서번호를 표시하시오.
@@ -86,13 +102,11 @@ where salary in (select min(salary) from employee
 
 select eno, ename, job, salary
     from employee
-    where salary <all (select (salary) 
+    where salary <all (select salary
                     from employee 
                     where job = 'ANALYST')
-          and job <> 'ANALYST'
+                    and job <> 'ANALYST'
     order by salary asc;
-
-
 
 7. 부하직원이 없는 사원의 이름을 표시 하시오. 
 
@@ -109,7 +123,7 @@ where eno in (select manager from employee);
 
 9. BLAKE 와 동일한 부서에 속한 사원의 이름과 입사일을 표시하는 질의를 작성하시오(단, BLAKE 는 제외). 
 
-select ename 성명, hiredate 입사일
+select ename 성명, hiredate 입사일, dno 부서명
 from employee 
 where dno = (select dno from employee where ename = 'BLAKE') and ename != 'BLAKE';
 
