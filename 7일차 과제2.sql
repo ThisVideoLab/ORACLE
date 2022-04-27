@@ -2,7 +2,6 @@
 1. 테이블정의서 - shopping 파일을 내려받아, 해당 양식에 맞는 테이블들을 만드시오.
 -------------------------------------------------------------------------------
 
-
 create table member(
     id varchar2(20) not null constraint PK_member_id Primary Key,
     pwd varchar2(20)not null,
