@@ -173,4 +173,9 @@ set dname = 'HR7', loc = 'BUSAN7', dno = 88; -- v_read_only는 읽기전용이라는 경�
 
 DELETE v_read_only -- v_read_only는 읽기전용이라는 경고가 뜸
 
-
+create table emp(
+eno number (4) not null
+ename varchar2(10) null
+dno number(2) null
+)
+-DB 설정에 따라서, null 허용 여부가 다르게 셋팅되어 있을 수 있음.
