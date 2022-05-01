@@ -51,10 +51,16 @@ HR	       | USERS	 | TEMP
 SYSTEM에 걸려있는 default_tablespace AS DATAFILE을 USERS로 바꿔줘야 비로소
 테이블 생성이 가능해짐. 코드는 다음과 같음
 */
-
+--  계정에게 테이블 스페이스 변경 (SYSTEM => USERS)변경
 ALTER user usertest01
-default tablespace users
-temporary tablespace temp;
+default tablespace users -- DataFile 저장: 객체가 저장되는 공간(테이블, 뷰, 트리거, 인덱스...)
+temporary tablespace temp; -- LOG를 저장: DML(Insert, Update, Delete)
+                           --  LOG를 호칭할때 Transaction log. 시스템의 문제 발생시 백업 시점이 아니라 오류난 시점까지 복원함
+                           -- 테이블 스페이스: 객체와 log를 저장하는 물리적인 파일
+                           -- 로그 : Transaction Log를 저장함.                           
+                           -- 이 때 DataFile과 log 파일은 물리적으로 다른 하드 공간에 저장해야 성은ㅇ이 높아짐
+                           -- Raid된 공간에 저장하면 성능을 높일 수 있음.
+                           
 -- 이후 다시 SQL CMD에서 create table을 시도했으나 권한 부족이 출력됨
 
 -- 계정에게 users 테이블 스페이스를 사용할 수 있는 권한 할당.
