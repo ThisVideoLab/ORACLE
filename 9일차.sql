@@ -264,6 +264,49 @@ drop index inx_empcopy91_allsal;
 -- Oracle에서 계정 생성하기
 
     --1. Run sql command line 실행 (일반 계정에서는 계정을 생성할 수 있는 권한이 없음)
+    show user;
     create user usertest01 identified by 1234;
+
+-- Object Privileges: 테이블, 뷰, 트리거, 함수,
+    -- 저장 프로시져, 시퀀스, 인덱스에 부여되는 권한할당
+    
+    ================================================
+    권한      테이블     뷰       시퀀스     프로시져
+    -----------------------------------------------
+    alter      0                  0
+    delete     0       0
+    execute                                  0
+    index      0
+    insert     0       0
+    reference  0
+    select     0       0          0
+    update     0       0
+    ------------------------------------------------
+    
+-- 특정 테이블에 select 권한 부여하기
+-- Authentication: credential ( ID + Pass)
+   create user user_test10 identified by 1234; -- craete account, should be done with SYS account.
+   
+-- Authorization (approval): system 권한 asign
+grant create session, create table, create view to user_test10;
+
+-- when the accuont is create, it usually use system table space(only SYS account can use system table space)  
+-- so it can be occured an error for taht, so we need to fix the new account's table space.
+
+-- altering new account table space
+alter user user_test10
+default tablespace "USERS"
+temporary tablespace "TEMP";
+
+-- table space volume asignment
+
+ALTER USER "USER_TEST10" QUOTA UNLIMITED ON "USERS";
+    
+--when an object is created in specific account, the account possess that object.
+select * from dba_tables
+where owner in ('USER_TEST10');
+
+--to acess other user's table, you have to have athority
+
 
 
