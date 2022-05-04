@@ -328,12 +328,106 @@ begin
         dbms_output.put_line(v_emp.eno||'   '||v_emp.ename||'   '||v_emp.salary||'   '||v_emp.dno);
     end loop;  
 end;
+
+
+/* 트리거 (Trigger)
+
+권총의 방아쇠(트리거), 방아쇠를 당기면 총이 발사되는 것처럼 테이블에 부착되어서 테이블에
+이벤트가 발생하면 자동으로 작동되는 프로그램 코드. 테이블에 발생되는 이벤트(INSERT, UPDATE,DELETE)
+트리거에 정의된 BEGIN ~ END 사이의 문장이 실행됨.
+
+BEFORE 트리거: 테이블에서 트리거 먼저 실행 후 insert, update, delete가 적용됨.
+AFTER 트리거: 테이블에서 insert, update, delete가  먼저 적용된 후 트리거가 실행됨.
+
+예) 주문 테이블에 값을 넣었을 때 배송 테이블에 자동으로 저장됨
+예) 중요 테이블의 로그를 자동으로 저장함
+
+-- :new ) 가상의 임시 테이블, 트리거가 부착된 테이블에 새롭게 들어오는 레코드를 위한 임시 테이블
+-- :old ) 가상의 임시 테이블, 트리거가 부착된 테이블에서 삭제되는 레코드를 위한 임시 테이블
+-- 트리거는 하나의 테이블에 총 3개까지 부착이 가능함(insert. update, delete)
+
+*/
+
+-- 실습 테이블 2개 생성: 테이블 2개 구조만 복사
+
+create table dept_original
+as
+select * from department
+where 0 = 1;
+
+create table dept_copy
+as
+select * from department
+where 0 = 1;
+
+-- 트리거 생성 (dept_original 테이블에 부착, insert시 자동으로 작동)
+
+create or replace trigger tri_sample1
+-- 이 공간에는 트리거가 부착될 테이블명과, 이벤트(insert,update,delete) 내용
+-- 그리고  before인지 after인지가 담김
+    after insert -- insert가 작동하고 난 후에 begin ~ end 사이의 코드가 작동됨
+    on dept_original --on절에는 트리거가 부착될 테이블명이 옴
+    for each row  -- 모든 row에 대해서
+begin -- 트리거가 실행할 코드가 들어감
+    if inserting then 
+        dbms_output.put_line ('Insert Trigger 발생!!');
+        insert into dept_copy 
+        values (:new.dno, :new.dname, :new.loc); -- 여기서 new 라는 건 가상 테이블을 뜻함
+    end if;
+end;
 /
 
+-- 트리거 생성 여부를 확인하는 데이터 사전 : user_source */
 
-select * from employee;
+select * from user_source where name ='TRI_SAMPLE1';
 
+select * from dept_original;  -- 트리거 부착 테이블과 대상 테이블의 상태 확인
+select * from dept_copy;
 
+insert into dept_original
+values (12, 'PROGRAM', 'PUSAN'); -- 오리지날 테이블에 값을 넣으면 카파 테이블에도 들어감
 
+create or replace trigger tri_del
+    --  트리거가 작동시킬 테이블, 이벤트, 에프터or비포
+    after delete -- 원본 테이블의 delete를 먼저 실행 한 후에 트리거를 작동시킴
+    on dept_original
+    for each row
 
+begin
+    dbms_output.put_line('delete trigger 발생!!!');
+    delete dept_copy
+    where dept_copy.dno = :old.dno;  --dept original에서 삭제되는 가상 임시 테이블 : old
+end;
+/
 
+select * from user_source where name ='TRI_del';
+
+select * from dept_original;  -- 트리거 부착 테이블과 대상 테이블의 상태 확인
+select * from dept_copy;
+
+delete dept_original
+where dno = 12;
+
+/* update 트리거: dept_original 테이블의 특정 값을 수정하면 dept_copy 테이블의 내용을 업데이트 함 */
+
+create or replace trigger tri_update
+    after update
+    on dept_original
+    for each row
+begin
+    dbms_outpuT.put_linE('update trigger 발생!!!');
+     update dept_copy
+     set dept_copy.dname = :new.dname
+     where dept_copy.dno = :old.dno;
+end;
+/
+
+select * from dept_original;  -- 주문 테이블이라고 가정하고
+select * from dept_copy; -- 배송 테이블이라고 가정하면
+
+update dept_original 
+set dname = 'prog'
+where dno = 13;
+
+insert into dept_original -- 주문 테이블이 수정되면 배송 테이블의 내용도 수정함
+values (13,'prog','pusan')
